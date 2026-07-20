@@ -1,91 +1,45 @@
 package transactional
 
 import (
-	"errors"
-
 	"github.com/go-git/go-git/v6/plumbing"
 	"github.com/go-git/go-git/v6/plumbing/storer"
 )
 
-// ObjectStorage implements the storer.EncodedObjectStorer for the transactional package.
 type ObjectStorage struct {
 	storer.EncodedObjectStorer
 	temporal storer.EncodedObjectStorer
 }
 
-// NewObjectStorage returns a new EncodedObjectStorer based on a base storer and
-// a temporal storer.
 func NewObjectStorage(base, temporal storer.EncodedObjectStorer) *ObjectStorage {
-	return &ObjectStorage{EncodedObjectStorer: base, temporal: temporal}
+	_ = "STUB: not implemented"
+	return nil
 }
 
-// SetEncodedObject honors the storer.EncodedObjectStorer interface.
 func (o *ObjectStorage) SetEncodedObject(obj plumbing.EncodedObject) (plumbing.Hash, error) {
-	return o.temporal.SetEncodedObject(obj)
+	_ = "STUB: not implemented"
+	return *new(plumbing.Hash), nil
 }
 
-// HasEncodedObject honors the storer.EncodedObjectStorer interface.
 func (o *ObjectStorage) HasEncodedObject(h plumbing.Hash) error {
-	err := o.EncodedObjectStorer.HasEncodedObject(h)
-	if errors.Is(err, plumbing.ErrObjectNotFound) {
-		return o.temporal.HasEncodedObject(h)
-	}
-
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
 
-// EncodedObjectSize honors the storer.EncodedObjectStorer interface.
 func (o *ObjectStorage) EncodedObjectSize(h plumbing.Hash) (int64, error) {
-	sz, err := o.EncodedObjectStorer.EncodedObjectSize(h)
-	if errors.Is(err, plumbing.ErrObjectNotFound) {
-		return o.temporal.EncodedObjectSize(h)
-	}
-
-	return sz, err
+	_ = "STUB: not implemented"
+	return 0, nil
 }
 
-// EncodedObject honors the storer.EncodedObjectStorer interface.
 func (o *ObjectStorage) EncodedObject(t plumbing.ObjectType, h plumbing.Hash) (plumbing.EncodedObject, error) {
-	obj, err := o.EncodedObjectStorer.EncodedObject(t, h)
-	if errors.Is(err, plumbing.ErrObjectNotFound) {
-		return o.temporal.EncodedObject(t, h)
-	}
-
-	return obj, err
+	_ = "STUB: not implemented"
+	return *new(plumbing.EncodedObject), nil
 }
 
-// IterEncodedObjects honors the storer.EncodedObjectStorer interface.
 func (o *ObjectStorage) IterEncodedObjects(t plumbing.ObjectType) (storer.EncodedObjectIter, error) {
-	baseIter, err := o.EncodedObjectStorer.IterEncodedObjects(t)
-	if err != nil {
-		return nil, err
-	}
-
-	temporalIter, err := o.temporal.IterEncodedObjects(t)
-	if err != nil {
-		return nil, err
-	}
-
-	return storer.NewMultiEncodedObjectIter([]storer.EncodedObjectIter{
-		baseIter,
-		temporalIter,
-	}), nil
+	_ = "STUB: not implemented"
+	return *new(storer.EncodedObjectIter), nil
 }
 
-// Commit it copies the objects of the temporal storage into the base storage.
-func (o *ObjectStorage) Commit() error {
-	iter, err := o.temporal.IterEncodedObjects(plumbing.AnyObject)
-	if err != nil {
-		return err
-	}
+func (o *ObjectStorage) Commit() error { _ = "STUB: not implemented"; return nil }
 
-	return iter.ForEach(func(obj plumbing.EncodedObject) error {
-		_, err := o.EncodedObjectStorer.SetEncodedObject(obj)
-		return err
-	})
-}
-
-// AddAlternate adds an alternate object directory.
-func (o *ObjectStorage) AddAlternate(remote string) error {
-	return o.temporal.AddAlternate(remote)
-}
+func (o *ObjectStorage) AddAlternate(remote string) error { _ = "STUB: not implemented"; return nil }

@@ -1,24 +1,12 @@
 package gitattributes
 
-// Matcher defines a global multi-pattern matcher for gitattributes patterns
 type Matcher interface {
-	// Match matches patterns in the order of priorities.
 	Match(path, attributes []string) (map[string]Attribute, bool)
 }
 
-// MatcherOptions contains options for the Matcher.
 type MatcherOptions struct{}
 
-// NewMatcher constructs a new matcher. Patterns must be given in the order of
-// increasing priority. That is the most generic settings files first, then the
-// content of the repo .gitattributes, then content of .gitattributes down the
-// path.
-func NewMatcher(stack []MatchAttribute) Matcher {
-	m := &matcher{stack: stack}
-	m.init()
-
-	return m
-}
+func NewMatcher(stack []MatchAttribute) Matcher { _ = "STUB: not implemented"; return *new(Matcher) }
 
 type matcher struct {
 	stack  []MatchAttribute
@@ -35,45 +23,12 @@ func (m *matcher) init() {
 	}
 }
 
-// Match matches path against the patterns in gitattributes files and returns
-// the attributes associated with the path.
-//
-// Specific attributes can be specified otherwise all attributes are returned.
-//
-// Matched is true if any path was matched to a rule, even if the results map
-// is empty.
 func (m *matcher) Match(path, attributes []string) (results map[string]Attribute, matched bool) {
-	results = make(map[string]Attribute, len(attributes))
-
-	n := len(m.stack)
-	for i := n - 1; i >= 0; i-- {
-		if len(attributes) > 0 && len(attributes) == len(results) {
-			return results, matched
-		}
-
-		pattern := m.stack[i].Pattern
-		if pattern == nil {
-			continue
-		}
-
-		if match := pattern.Match(path); match {
-			matched = true
-			for _, attr := range m.stack[i].Attributes {
-				if attr.IsSet() {
-					m.expandMacro(attr.Name(), results)
-				}
-				results[attr.Name()] = attr
-			}
-		}
-	}
-	return results, matched
+	_ = "STUB: not implemented"
+	return nil, false
 }
 
 func (m *matcher) expandMacro(name string, results map[string]Attribute) bool {
-	if macro, ok := m.macros[name]; ok {
-		for _, attr := range macro.Attributes {
-			results[attr.Name()] = attr
-		}
-	}
+	_ = "STUB: not implemented"
 	return false
 }

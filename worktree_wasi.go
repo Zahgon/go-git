@@ -21,10 +21,6 @@ func init() {
 	}
 }
 
-func isSymlinkWindowsNonAdmin(error) bool {
-	return false
-}
+func isSymlinkWindowsNonAdmin(error) bool { _ = "STUB: not implemented"; return false }
 
-func preReceiveHook(string) []byte {
-	return []byte{}
-}
+func preReceiveHook(string) []byte { _ = "STUB: not implemented"; return nil }

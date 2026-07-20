@@ -6,7 +6,6 @@ import (
 	internal "github.com/go-git/go-git/v6/internal/transport"
 )
 
-// Transport errors.
 var (
 	ErrRepositoryNotFound     = errors.New("repository not found")
 	ErrEmptyRemoteRepository  = errors.New("remote repository is empty")
@@ -19,7 +18,6 @@ var (
 	ErrInvalidRequest         = errors.New("invalid request")
 )
 
-// Transport capability and support errors.
 var (
 	ErrConnectUnsupported        = errors.New("transport does not support raw connections")
 	ErrArchiveUnsupported        = errors.New("transport does not support archive")
@@ -32,7 +30,6 @@ var (
 	ErrPackedObjectsNotSupported = errors.New("packed objects not supported")
 )
 
-// Negotiation errors.
 var (
 	ErrFilterNotSupported  = errors.New("server does not support filters")
 	ErrShallowNotSupported = errors.New("server does not support shallow clients")

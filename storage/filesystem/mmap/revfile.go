@@ -3,8 +3,6 @@
 package mmap
 
 import (
-	"fmt"
-
 	"github.com/go-git/go-billy/v6"
 )
 
@@ -18,18 +16,4 @@ const (
 	revHeader = 4 + 4 + 4
 )
 
-func (s *PackScanner) loadRevFile(rev billy.File) error {
-	mmap, cleanup, err := mmapFile(rev)
-	if err != nil {
-		return fmt.Errorf("cannot create mmap for .rev file: %w", err)
-	}
-	if err := validateFile(mmap, revSupported, revSignature, revMinLen); err != nil {
-		_ = cleanup()
-		return fmt.Errorf("malformed rev file: %w", err)
-	}
-
-	s.revCleanup = cleanup
-	s.revMmap = mmap
-
-	return nil
-}
+func (s *PackScanner) loadRevFile(rev billy.File) error { _ = "STUB: not implemented"; return nil }

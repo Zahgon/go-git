@@ -1,4 +1,3 @@
-// Package sync provides sync.Pool-based utilities for reusing objects.
 package sync
 
 import (
@@ -13,21 +12,6 @@ var bufioReader = sync.Pool{
 	},
 }
 
-// GetBufioReader returns a *bufio.Reader that is managed by a sync.Pool.
-// Returns a bufio.Reader that is reset with reader and ready for use.
-//
-// After use, the *bufio.Reader should be put back into the sync.Pool
-// by calling PutBufioReader.
-func GetBufioReader(reader io.Reader) *bufio.Reader {
-	r := bufioReader.Get().(*bufio.Reader)
-	r.Reset(reader)
-	return r
-}
+func GetBufioReader(reader io.Reader) *bufio.Reader { _ = "STUB: not implemented"; return nil }
 
-// PutBufioReader puts reader back into its sync.Pool.
-func PutBufioReader(reader *bufio.Reader) {
-	if reader == nil {
-		return
-	}
-	bufioReader.Put(reader)
-}
+func PutBufioReader(reader *bufio.Reader) { _ = "STUB: not implemented"; return }

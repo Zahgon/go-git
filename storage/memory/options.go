@@ -6,16 +6,11 @@ type options struct {
 	objectFormat formatcfg.ObjectFormat
 }
 
-func newOptions() options {
-	return options{}
-}
+func newOptions() options { _ = "STUB: not implemented"; return *new(options) }
 
-// StorageOption is a function that configures storage options.
 type StorageOption func(*options)
 
-// WithObjectFormat sets the storage's object format.
 func WithObjectFormat(of formatcfg.ObjectFormat) StorageOption {
-	return func(o *options) {
-		o.objectFormat = of
-	}
+	_ = "STUB: not implemented"
+	return *new(StorageOption)
 }

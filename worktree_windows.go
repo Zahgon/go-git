@@ -3,11 +3,8 @@
 package git
 
 import (
-	"os"
 	"syscall"
 	"time"
-
-	"golang.org/x/sys/windows"
 
 	"github.com/go-git/go-git/v6/plumbing/format/index"
 )
@@ -22,14 +19,4 @@ func init() {
 	}
 }
 
-func isSymlinkWindowsNonAdmin(err error) bool {
-	if err != nil {
-		if errLink, ok := err.(*os.LinkError); ok {
-			if errNo, ok := errLink.Err.(syscall.Errno); ok {
-				return errNo == windows.ERROR_PRIVILEGE_NOT_HELD
-			}
-		}
-	}
-
-	return false
-}
+func isSymlinkWindowsNonAdmin(err error) bool { _ = "STUB: not implemented"; return false }

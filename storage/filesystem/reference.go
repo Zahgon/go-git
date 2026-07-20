@@ -6,47 +6,35 @@ import (
 	"github.com/go-git/go-git/v6/storage/filesystem/dotgit"
 )
 
-// ReferenceStorage implements storer.ReferenceStorer for filesystem storage.
 type ReferenceStorage struct {
 	dir *dotgit.DotGit
 }
 
-// SetReference stores a reference.
 func (r *ReferenceStorage) SetReference(ref *plumbing.Reference) error {
-	return r.dir.SetRef(ref, nil)
+	_ = "STUB: not implemented"
+	return nil
 }
 
-// CheckAndSetReference stores a reference after verifying the old value matches.
 func (r *ReferenceStorage) CheckAndSetReference(ref, old *plumbing.Reference) error {
-	return r.dir.SetRef(ref, old)
+	_ = "STUB: not implemented"
+	return nil
 }
 
-// Reference returns the reference with the given name.
 func (r *ReferenceStorage) Reference(n plumbing.ReferenceName) (*plumbing.Reference, error) {
-	return r.dir.Ref(n)
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
-// IterReferences returns an iterator over all references.
 func (r *ReferenceStorage) IterReferences() (storer.ReferenceIter, error) {
-	refs, err := r.dir.Refs()
-	if err != nil {
-		return nil, err
-	}
-
-	return storer.NewReferenceSliceIter(refs), nil
+	_ = "STUB: not implemented"
+	return *new(storer.ReferenceIter), nil
 }
 
-// RemoveReference deletes the reference with the given name.
 func (r *ReferenceStorage) RemoveReference(n plumbing.ReferenceName) error {
-	return r.dir.RemoveRef(n)
+	_ = "STUB: not implemented"
+	return nil
 }
 
-// CountLooseRefs returns the number of loose references.
-func (r *ReferenceStorage) CountLooseRefs() (int, error) {
-	return r.dir.CountLooseRefs()
-}
+func (r *ReferenceStorage) CountLooseRefs() (int, error) { _ = "STUB: not implemented"; return 0, nil }
 
-// PackRefs packs all loose references into a single packed-refs file.
-func (r *ReferenceStorage) PackRefs() error {
-	return r.dir.PackRefs()
-}
+func (r *ReferenceStorage) PackRefs() error { _ = "STUB: not implemented"; return nil }

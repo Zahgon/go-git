@@ -1,46 +1,25 @@
-// Package ioutil implements some I/O utility functions.
 package ioutil
 
 import (
-	"bufio"
 	"context"
 	"errors"
 	"io"
 )
 
-// Peeker is an interface for types that can peek at the next bytes.
 type Peeker interface {
 	Peek(int) ([]byte, error)
 }
 
-// ReadPeeker is an interface that groups the basic Read and Peek methods.
 type ReadPeeker interface {
 	io.Reader
 	Peeker
 }
 
-// ErrEmptyReader is returned when a reader is empty.
 var ErrEmptyReader = errors.New("reader is empty")
 
-// NonEmptyReader takes a reader and returns it if it is not empty, or
-// `ErrEmptyReader` if it is empty. If there is an error when reading the first
-// byte of the given reader, it will be propagated.
 func NonEmptyReader(r io.Reader) (io.Reader, error) {
-	pr, ok := r.(ReadPeeker)
-	if !ok {
-		pr = bufio.NewReader(r)
-	}
-
-	_, err := pr.Peek(1)
-	if err == io.EOF {
-		return nil, ErrEmptyReader
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	return pr, nil
+	_ = "STUB: not implemented"
+	return *new(io.Reader), nil
 }
 
 type readCloser struct {
@@ -48,14 +27,11 @@ type readCloser struct {
 	closer io.Closer
 }
 
-func (r *readCloser) Close() error {
-	return r.closer.Close()
-}
+func (r *readCloser) Close() error { _ = "STUB: not implemented"; return nil }
 
-// NewReadCloser creates an `io.ReadCloser` with the given `io.Reader` and
-// `io.Closer`.
 func NewReadCloser(r io.Reader, c io.Closer) io.ReadCloser {
-	return &readCloser{Reader: r, closer: c}
+	_ = "STUB: not implemented"
+	return *new(io.ReadCloser)
 }
 
 type readCloserCloser struct {
@@ -63,21 +39,11 @@ type readCloserCloser struct {
 	closer func() error
 }
 
-func (r *readCloserCloser) Close() (err error) {
-	defer func() {
-		if err == nil {
-			err = r.closer()
-			return
-		}
-		_ = r.closer()
-	}()
-	return r.ReadCloser.Close()
-}
+func (r *readCloserCloser) Close() (err error) { _ = "STUB: not implemented"; return nil }
 
-// NewReadCloserWithCloser creates an `io.ReadCloser` with the given `io.ReaderCloser` and
-// `io.Closer` that ensures that the closer is closed on close
 func NewReadCloserWithCloser(r io.ReadCloser, c func() error) io.ReadCloser {
-	return &readCloserCloser{ReadCloser: r, closer: c}
+	_ = "STUB: not implemented"
+	return *new(io.ReadCloser)
 }
 
 type writeCloser struct {
@@ -85,29 +51,22 @@ type writeCloser struct {
 	closer io.Closer
 }
 
-func (r *writeCloser) Close() error {
-	if r.closer == nil {
-		return nil
-	}
-	return r.closer.Close()
-}
+func (r *writeCloser) Close() error { _ = "STUB: not implemented"; return nil }
 
-// NewWriteCloser creates an `io.WriteCloser` with the given `io.Writer` and
-// `io.Closer`.
 func NewWriteCloser(w io.Writer, c io.Closer) io.WriteCloser {
-	return &writeCloser{Writer: w, closer: c}
+	_ = "STUB: not implemented"
+	return *new(io.WriteCloser)
 }
 
 type writeNopCloser struct {
 	io.Writer
 }
 
-func (writeNopCloser) Close() error { return nil }
+func (writeNopCloser) Close() error { _ = "STUB: not implemented"; return nil }
 
-// WriteNopCloser returns a WriteCloser with a no-op Close method wrapping
-// the provided Writer w.
 func WriteNopCloser(w io.Writer) io.WriteCloser {
-	return writeNopCloser{w}
+	_ = "STUB: not implemented"
+	return *new(io.WriteCloser)
 }
 
 type readerAtAsReader struct {
@@ -115,39 +74,23 @@ type readerAtAsReader struct {
 	offset int64
 }
 
-func (r *readerAtAsReader) Read(bs []byte) (int, error) {
-	n, err := r.ReadAt(bs, r.offset)
-	r.offset += int64(n)
-	return n, err
-}
+func (r *readerAtAsReader) Read(bs []byte) (int, error) { _ = "STUB: not implemented"; return 0, nil }
 
-// NewReaderUsingReaderAt returns a new io.Reader from an io.ReaderAt starting at the given offset.
 func NewReaderUsingReaderAt(r io.ReaderAt, offset int64) io.Reader {
-	return &readerAtAsReader{
-		ReaderAt: r,
-		offset:   offset,
-	}
+	_ = "STUB: not implemented"
+	return *new(io.Reader)
 }
 
-// CheckClose calls Close on the given io.Closer. If the given *error points to
-// nil, it will be assigned the error returned by Close. Otherwise, any error
-// returned by Close will be ignored. CheckClose is usually called with defer.
-func CheckClose(c io.Closer, err *error) {
-	if cerr := c.Close(); cerr != nil && *err == nil {
-		*err = cerr
-	}
-}
+func CheckClose(c io.Closer, err *error) { _ = "STUB: not implemented"; return }
 
-// NewContextWriteCloser as NewContextWriter but with io.Closer interface.
 func NewContextWriteCloser(ctx context.Context, w io.WriteCloser) io.WriteCloser {
-	ctxw := NewContextWriter(ctx, w)
-	return NewWriteCloser(ctxw, w)
+	_ = "STUB: not implemented"
+	return *new(io.WriteCloser)
 }
 
-// NewContextReadCloser as NewContextReader but with io.Closer interface.
 func NewContextReadCloser(ctx context.Context, r io.ReadCloser) io.ReadCloser {
-	ctxr := NewContextReader(ctx, r)
-	return NewReadCloser(ctxr, r)
+	_ = "STUB: not implemented"
+	return *new(io.ReadCloser)
 }
 
 type readerOnError struct {
@@ -155,25 +98,19 @@ type readerOnError struct {
 	notify func(error)
 }
 
-// NewReaderOnError returns a io.Reader that call the notify function when an
-// unexpected (!io.EOF) error happens, after call Read function.
 func NewReaderOnError(r io.Reader, notify func(error)) io.Reader {
-	return &readerOnError{r, notify}
+	_ = "STUB: not implemented"
+	return *new(io.Reader)
 }
 
-// NewReadCloserOnError returns a io.ReadCloser that call the notify function
-// when an unexpected (!io.EOF) error happens, after call Read function.
 func NewReadCloserOnError(r io.ReadCloser, notify func(error)) io.ReadCloser {
-	return NewReadCloser(NewReaderOnError(r, notify), r)
+	_ = "STUB: not implemented"
+	return *new(io.ReadCloser)
 }
 
 func (r *readerOnError) Read(buf []byte) (n int, err error) {
-	n, err = r.Reader.Read(buf)
-	if err != nil && err != io.EOF {
-		r.notify(err)
-	}
-
-	return n, err
+	_ = "STUB: not implemented"
+	return 0, nil
 }
 
 type writerOnError struct {
@@ -181,33 +118,23 @@ type writerOnError struct {
 	notify func(error)
 }
 
-// NewWriterOnError returns a io.Writer that call the notify function when an
-// unexpected (!io.EOF) error happens, after call Write function.
 func NewWriterOnError(w io.Writer, notify func(error)) io.Writer {
-	return &writerOnError{w, notify}
+	_ = "STUB: not implemented"
+	return *new(io.Writer)
 }
 
-// NewWriteCloserOnError returns a io.WriteCloser that call the notify function
-// when an unexpected (!io.EOF) error happens, after call Write function.
 func NewWriteCloserOnError(w io.WriteCloser, notify func(error)) io.WriteCloser {
-	return NewWriteCloser(NewWriterOnError(w, notify), w)
+	_ = "STUB: not implemented"
+	return *new(io.WriteCloser)
 }
 
 func (r *writerOnError) Write(p []byte) (n int, err error) {
-	n, err = r.Writer.Write(p)
-	if err != nil && err != io.EOF {
-		r.notify(err)
-	}
-
-	return n, err
+	_ = "STUB: not implemented"
+	return 0, nil
 }
 
-// CloserFunc implements the io.Closer interface with a function.
 type CloserFunc func() error
 
 var _ io.Closer = CloserFunc(nil)
 
-// Close calls the function.
-func (f CloserFunc) Close() error {
-	return f()
-}
+func (f CloserFunc) Close() error { _ = "STUB: not implemented"; return nil }

@@ -38,9 +38,6 @@ options:
 `
 )
 
-// Command that mimics `git merge-base --all <baseRev> <headRev>`
-// Command that mimics `git merge-base --is-ancestor <baseRev> <headRev>`
-// Command that mimics `git merge-base --independent <commitRev>...`
 func main() {
 	if len(os.Args) == 1 {
 		helpAndExit("Returns the merge-base between two commits:", helpShortMsg, exitCodeSuccess)
@@ -77,12 +74,10 @@ func main() {
 		}
 	}
 
-	// Open a git repository from current directory
 	repo, err := git.PlainOpen(path)
 	checkIfError(err, exitCodeCouldNotOpenRepository, "not in a git repository")
 	defer func() { _ = repo.Close() }()
 
-	// Get the hashes of the passed revisions
 	var hashes []*plumbing.Hash
 	for _, rev := range commitRevs {
 		hash, err := repo.ResolveRevision(plumbing.Revision(rev))
@@ -90,7 +85,6 @@ func main() {
 		hashes = append(hashes, hash)
 	}
 
-	// Get the commits identified by the passed hashes
 	var commits []*object.Commit
 	for _, hash := range hashes {
 		commit, err := repo.CommitObject(*hash)
