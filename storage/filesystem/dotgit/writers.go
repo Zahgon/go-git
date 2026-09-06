@@ -1,9 +1,6 @@
 package dotgit
 
 import (
-	"crypto"
-	"errors"
-	"fmt"
 	"hash"
 	"io"
 	"sync/atomic"
@@ -15,15 +12,8 @@ import (
 	"github.com/go-git/go-git/v6/plumbing/format/idxfile"
 	"github.com/go-git/go-git/v6/plumbing/format/objfile"
 	"github.com/go-git/go-git/v6/plumbing/format/packfile"
-	"github.com/go-git/go-git/v6/plumbing/format/revfile"
 )
 
-// PackWriter is a io.Writer that generates the packfile index simultaneously,
-// a packfile.Decoder is used with a file reader to read the file being written
-// this operation is synchronized with the write operations.
-// The packfile is written in a temp file, when Close is called this file
-// is renamed/moved (depends on the Filesystem implementation) to the final
-// location, if the PackWriter is not used, nothing is written.
 type PackWriter struct {
 	Notify func(plumbing.Hash, *idxfile.Writer)
 
@@ -36,250 +26,40 @@ type PackWriter struct {
 	result   chan error
 	format   formatcfg.ObjectFormat
 	writeRev bool
-	// promisor, when non-nil, writes a .promisor sidecar next to the pack
-	// carrying these contents. A nil value leaves the pack unmarked.
+
 	promisor *string
 }
 
 func newPackWrite(fs billy.Filesystem, format formatcfg.ObjectFormat, writeRev bool) (*PackWriter, error) {
-	fw, err := fs.TempFile(fs.Join(objectsPath, packPath), "tmp_pack_")
-	if err != nil {
-		return nil, err
-	}
-
-	fr, err := fs.Open(fw.Name())
-	if err != nil {
-		return nil, err
-	}
-
-	writer := &PackWriter{
-		fs:       fs,
-		fw:       fw,
-		fr:       fr,
-		synced:   newSyncedReader(fw, fr),
-		result:   make(chan error),
-		format:   format,
-		writeRev: writeRev,
-	}
-
-	writer.checksum.ResetBySize(format.Size())
-
-	go writer.buildIndex()
-	return writer, nil
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
-func (w *PackWriter) buildIndex() {
-	w.writer = new(idxfile.Writer)
-	var err error
+func (w *PackWriter) buildIndex() { _ = "STUB: not implemented"; return }
 
-	w.parser = packfile.NewParser(w.synced,
-		packfile.WithScannerObservers(w.writer),
-		packfile.WithObjectFormat(w.format))
+func (w *PackWriter) waitBuildIndex() error { _ = "STUB: not implemented"; return nil }
 
-	h, err := w.parser.Parse()
-	if err != nil {
-		w.result <- err
-		return
-	}
+func (w *PackWriter) Write(p []byte) (int, error) { _ = "STUB: not implemented"; return 0, nil }
 
-	w.checksum = h
-	w.result <- nil
-}
+func (w *PackWriter) Close() error { _ = "STUB: not implemented"; return nil }
 
-// waitBuildIndex waits until buildIndex function finishes, this can terminate
-// with a packfile.ErrEmptyPackfile, this means that nothing was written so we
-// ignore the error
-func (w *PackWriter) waitBuildIndex() error {
-	err := <-w.result
-	if errors.Is(err, packfile.ErrEmptyPackfile) {
-		return nil
-	}
+func (w *PackWriter) clean() error { _ = "STUB: not implemented"; return nil }
 
-	return err
-}
+func (w *PackWriter) save() error { _ = "STUB: not implemented"; return nil }
 
-func (w *PackWriter) Write(p []byte) (int, error) {
-	return w.synced.Write(p)
-}
-
-// Close closes all the file descriptors and save the final packfile, if nothing
-// was written, the tempfiles are deleted without writing a packfile.
-func (w *PackWriter) Close() error {
-	defer func() {
-		if w.Notify != nil && w.writer != nil && w.writer.Finished() {
-			w.Notify(w.checksum, w.writer)
-		}
-
-		close(w.result)
-	}()
-
-	if err := w.synced.Close(); err != nil {
-		return err
-	}
-
-	if err := w.waitBuildIndex(); err != nil {
-		return err
-	}
-
-	if err := w.fr.Close(); err != nil {
-		return err
-	}
-
-	if err := w.fw.Close(); err != nil {
-		return err
-	}
-
-	if w.writer == nil || !w.writer.Finished() {
-		return w.clean()
-	}
-
-	return w.save()
-}
-
-func (w *PackWriter) clean() error {
-	return w.fs.Remove(w.fw.Name())
-}
-
-func (w *PackWriter) save() error {
-	base := w.fs.Join(objectsPath, packPath, fmt.Sprintf("pack-%s", w.checksum))
-
-	h := crypto.SHA1.New()
-	if w.checksum.Size() == crypto.SHA256.Size() {
-		h = crypto.SHA256.New()
-	}
-
-	// Pack files are content addressable. Each file is checked
-	// individually — if it already exists on disk, skip creating it.
-	idxPath := fmt.Sprintf("%s.idx", base)
-	exists, err := fileExists(w.fs, idxPath)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		idx, err := w.fs.Create(idxPath)
-		if err != nil {
-			return err
-		}
-
-		if err := w.encodeIdx(idx, h); err != nil {
-			_ = idx.Close()
-			return err
-		}
-
-		if err := idx.Close(); err != nil {
-			return err
-		}
-		fixPermissions(w.fs, idxPath)
-	}
-
-	if w.writeRev {
-		revPath := fmt.Sprintf("%s.rev", base)
-		exists, err := fileExists(w.fs, revPath)
-		if err != nil {
-			return err
-		}
-		if !exists {
-			rev, err := w.fs.Create(revPath)
-			if err != nil {
-				return err
-			}
-
-			if err := w.encodeRev(rev, h); err != nil {
-				_ = rev.Close()
-				return err
-			}
-
-			if err := rev.Close(); err != nil {
-				return err
-			}
-			fixPermissions(w.fs, revPath)
-		}
-	}
-
-	packPath := fmt.Sprintf("%s.pack", base)
-	exists, err = fileExists(w.fs, packPath)
-	if err != nil {
-		return err
-	}
-
-	// The marker is written before the pack is moved into place, and only for a
-	// pack this writer is placing. A pack visible without its marker looks
-	// ordinary, so whatever the promisor remote withheld would read as
-	// corruption until the marker landed; crashing in that window must not be
-	// able to produce a repository git refuses to gc.
-	//
-	// An identical pack already on disk is left exactly as it is, marked or
-	// not. Packs are content addressed, so the same hash means the same
-	// objects, and nothing is missing that was not missing before; marking it
-	// now would newly declare the repository a partial clone on the strength of
-	// a duplicate.
-	if w.promisor != nil && !exists {
-		promisorPath := fmt.Sprintf("%s%s", base, promisorExt)
-		promisorExists, err := fileExists(w.fs, promisorPath)
-		if err != nil {
-			return err
-		}
-		if !promisorExists {
-			f, err := w.fs.Create(promisorPath)
-			if err != nil {
-				return err
-			}
-
-			if _, err := io.WriteString(f, *w.promisor); err != nil {
-				_ = f.Close()
-				return err
-			}
-
-			if err := f.Close(); err != nil {
-				return err
-			}
-		}
-	}
-
-	if !exists {
-		if err := w.fs.Rename(w.fw.Name(), packPath); err != nil {
-			return err
-		}
-		fixPermissions(w.fs, packPath)
-	} else {
-		// Pack already exists, clean up the temp file.
-		return w.clean()
-	}
-
-	return nil
-}
-
-// fileExists checks whether path already exists as a regular file.
-// It returns (true, nil) for an existing regular file, (false, nil) when the
-// path does not exist, and (false, err) if the path exists but is not a
-// regular file (e.g. a directory or symlink).
 func fileExists(fs billy.Filesystem, path string) (bool, error) {
-	fi, err := fs.Lstat(path)
-	if err != nil {
-		return false, nil
-	}
-	if !fi.Mode().IsRegular() {
-		return false, fmt.Errorf("unexpected file type for %q: %s", path, fi.Mode().Type())
-	}
-	return true, nil
+	_ = "STUB: not implemented"
+	return false, nil
 }
 
 func (w *PackWriter) encodeIdx(writer io.Writer, h hash.Hash) error {
-	idx, err := w.writer.Index()
-	if err != nil {
-		return err
-	}
-
-	return idxfile.Encode(writer, h, idx)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (w *PackWriter) encodeRev(writer io.Writer, h hash.Hash) error {
-	idx, err := w.writer.Index()
-	if err != nil {
-		return err
-	}
-
-	return revfile.Encode(writer, h, idx)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 type syncedReader struct {
@@ -292,84 +72,29 @@ type syncedReader struct {
 }
 
 func newSyncedReader(w io.Writer, r io.ReadSeeker) *syncedReader {
-	return &syncedReader{
-		w:    w,
-		r:    r,
-		news: make(chan bool),
-	}
-}
-
-func (s *syncedReader) Write(p []byte) (n int, err error) {
-	defer func() {
-		written := s.written.Add(uint64(n))
-		read := s.read.Load()
-		if written > read {
-			s.wake()
-		}
-	}()
-
-	n, err = s.w.Write(p)
-	return n, err
-}
-
-func (s *syncedReader) Read(p []byte) (n int, err error) {
-	defer func() { s.read.Add(uint64(n)) }()
-
-	for {
-		s.sleep()
-		n, err = s.r.Read(p)
-		if err == io.EOF && !s.isDone() && n == 0 {
-			continue
-		}
-
-		break
-	}
-
-	return n, err
-}
-
-func (s *syncedReader) isDone() bool {
-	return s.done.Load() == 1
-}
-
-func (s *syncedReader) isBlocked() bool {
-	return s.blocked.Load() == 1
-}
-
-func (s *syncedReader) wake() {
-	if s.isBlocked() {
-		s.blocked.Store(0)
-		s.news <- true
-	}
-}
-
-func (s *syncedReader) sleep() {
-	read := s.read.Load()
-	written := s.written.Load()
-	if read >= written {
-		s.blocked.Store(1)
-		<-s.news
-	}
-}
-
-func (s *syncedReader) Seek(offset int64, whence int) (int64, error) {
-	if whence == io.SeekCurrent {
-		return s.r.Seek(offset, whence)
-	}
-
-	p, err := s.r.Seek(offset, whence)
-	s.read.Store(uint64(p))
-
-	return p, err
-}
-
-func (s *syncedReader) Close() error {
-	s.done.Store(1)
-	close(s.news)
+	_ = "STUB: not implemented"
 	return nil
 }
 
-// ObjectWriter writes a single git object to the filesystem.
+func (s *syncedReader) Write(p []byte) (n int, err error) { _ = "STUB: not implemented"; return 0, nil }
+
+func (s *syncedReader) Read(p []byte) (n int, err error) { _ = "STUB: not implemented"; return 0, nil }
+
+func (s *syncedReader) isDone() bool { _ = "STUB: not implemented"; return false }
+
+func (s *syncedReader) isBlocked() bool { _ = "STUB: not implemented"; return false }
+
+func (s *syncedReader) wake() { _ = "STUB: not implemented"; return }
+
+func (s *syncedReader) sleep() { _ = "STUB: not implemented"; return }
+
+func (s *syncedReader) Seek(offset int64, whence int) (int64, error) {
+	_ = "STUB: not implemented"
+	return 0, nil
+}
+
+func (s *syncedReader) Close() error { _ = "STUB: not implemented"; return nil }
+
 type ObjectWriter struct {
 	objfile.Writer
 	fs billy.Filesystem
@@ -377,47 +102,10 @@ type ObjectWriter struct {
 }
 
 func newObjectWriter(fs billy.Filesystem, objectFormat formatcfg.ObjectFormat) (*ObjectWriter, error) {
-	f, err := fs.TempFile(fs.Join(objectsPath, packPath), "tmp_obj_")
-	if err != nil {
-		return nil, err
-	}
-
-	return &ObjectWriter{
-		Writer: (*objfile.NewWriter(f, objectFormat)),
-		fs:     fs,
-		f:      f,
-	}, nil
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
-// Close finalizes the object and moves it to its permanent location.
-func (w *ObjectWriter) Close() error {
-	if err := w.Writer.Close(); err != nil {
-		return err
-	}
+func (w *ObjectWriter) Close() error { _ = "STUB: not implemented"; return nil }
 
-	if err := w.f.Close(); err != nil {
-		return err
-	}
-
-	return w.save()
-}
-
-func (w *ObjectWriter) save() error {
-	h := w.Hash()
-	hex := h.String()
-	file := w.fs.Join(objectsPath, hex[0:2], hex[2:h.HexSize()])
-
-	// Loose objects are content addressable, if they already exist
-	// we can safely delete the temporary file and short-circuit the
-	// operation.
-	if _, err := w.fs.Lstat(file); err == nil {
-		return w.fs.Remove(w.f.Name())
-	}
-
-	if err := w.fs.Rename(w.f.Name(), file); err != nil {
-		return err
-	}
-	fixPermissions(w.fs, file)
-
-	return nil
-}
+func (w *ObjectWriter) save() error { _ = "STUB: not implemented"; return nil }

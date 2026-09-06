@@ -9,12 +9,10 @@ import (
 	"github.com/go-git/go-git/v6/plumbing"
 )
 
-// Basic example of how to checkout a specific commit.
 func main() {
 	CheckArgs("<url>", "<directory>", "<commit>")
 	url, directory, commit := os.Args[1], os.Args[2], os.Args[3]
 
-	// Clone the given repository to the given directory
 	Info("git clone %s %s", url, directory)
 	r, err := git.PlainClone(directory, &git.CloneOptions{
 		URL: url,
@@ -23,7 +21,6 @@ func main() {
 	CheckIfError(err)
 	defer func() { _ = r.Close() }()
 
-	// ... retrieving the commit being pointed by HEAD
 	Info("git show-ref --head HEAD")
 	ref, err := r.Head()
 	CheckIfError(err)
@@ -32,15 +29,12 @@ func main() {
 	w, err := r.Worktree()
 	CheckIfError(err)
 
-	// ... checking out to commit
 	Info("git checkout %s", commit)
 	err = w.Checkout(&git.CheckoutOptions{
 		Hash: plumbing.NewHash(commit),
 	})
 	CheckIfError(err)
 
-	// ... retrieving the commit being pointed by HEAD, it shows that the
-	// repository is pointing to the giving commit in detached mode
 	Info("git show-ref --head HEAD")
 	ref, err = r.Head()
 	CheckIfError(err)

@@ -1,21 +1,9 @@
 package plumbing
 
-import "fmt"
-
-// PermanentError represents an unrecoverable error.
 type PermanentError struct {
 	Err error
 }
 
-// NewPermanentError returns a new PermanentError wrapping the given error.
-func NewPermanentError(err error) *PermanentError {
-	if err == nil {
-		return nil
-	}
+func NewPermanentError(err error) *PermanentError { _ = "STUB: not implemented"; return nil }
 
-	return &PermanentError{Err: err}
-}
-
-func (e *PermanentError) Error() string {
-	return fmt.Sprintf("permanent client error: %s", e.Err.Error())
-}
+func (e *PermanentError) Error() string { _ = "STUB: not implemented"; return "" }

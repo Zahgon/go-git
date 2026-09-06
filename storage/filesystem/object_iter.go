@@ -1,16 +1,11 @@
 package filesystem
 
 import (
-	"crypto"
-	"io"
-
 	"github.com/go-git/go-billy/v6"
 
 	"github.com/go-git/go-git/v6/plumbing"
 	"github.com/go-git/go-git/v6/plumbing/cache"
 	"github.com/go-git/go-git/v6/plumbing/format/idxfile"
-	"github.com/go-git/go-git/v6/plumbing/format/packfile"
-	"github.com/go-git/go-git/v6/plumbing/hash"
 	"github.com/go-git/go-git/v6/plumbing/storer"
 )
 
@@ -21,88 +16,36 @@ type lazyPackfilesIter struct {
 }
 
 func (it *lazyPackfilesIter) Next() (plumbing.EncodedObject, error) {
-	for {
-		if it.cur == nil {
-			if len(it.hashes) == 0 {
-				return nil, io.EOF
-			}
-			h := it.hashes[0]
-			it.hashes = it.hashes[1:]
-
-			sub, err := it.open(h)
-			if err == io.EOF {
-				continue
-			} else if err != nil {
-				return nil, err
-			}
-			it.cur = sub
-		}
-		ob, err := it.cur.Next()
-		if err == io.EOF {
-			it.cur.Close()
-			it.cur = nil
-			continue
-		} else if err != nil {
-			it.cur.Close()
-			it.cur = nil
-			return nil, err
-		}
-		return ob, nil
-	}
+	_ = "STUB: not implemented"
+	return *new(plumbing.EncodedObject), nil
 }
 
 func (it *lazyPackfilesIter) ForEach(cb func(plumbing.EncodedObject) error) error {
-	return storer.ForEachIterator(it, cb)
+	_ = "STUB: not implemented"
+	return nil
 }
 
-func (it *lazyPackfilesIter) Close() {
-	if it.cur != nil {
-		it.cur.Close()
-		it.cur = nil
-	}
-	it.hashes = nil
-}
+func (it *lazyPackfilesIter) Close() { _ = "STUB: not implemented"; return }
 
 type packfileIter struct {
 	pack billy.File
 	iter storer.EncodedObjectIter
 	seen map[plumbing.Hash]struct{}
 
-	// tells whether the pack file should be left open after iteration or not
 	keepPack bool
 }
 
-// NewPackfileIter returns a new EncodedObjectIter for the provided packfile
-// and object type. Packfile and index file will be closed after they're
-// used. If keepPack is true the packfile won't be closed after the iteration
-// finished.
 func NewPackfileIter(
 	fs billy.Filesystem,
 	f billy.File,
 	idxFile billy.File,
 	t plumbing.ObjectType,
 	keepPack bool,
-	_ int64, // largeObjectThreshold - currently unused
+	_ int64,
 	objectIDSize int,
 ) (storer.EncodedObjectIter, error) {
-	var hasher hash.Hash
-	if objectIDSize == crypto.SHA256.Size() {
-		hasher = hash.New(crypto.SHA256)
-	} else {
-		hasher = hash.New(crypto.SHA1)
-	}
-
-	idx := idxfile.NewMemoryIndex(objectIDSize)
-	if err := idxfile.NewDecoder(idxFile, hasher).Decode(idx); err != nil {
-		return nil, err
-	}
-
-	if err := idxFile.Close(); err != nil {
-		return nil, err
-	}
-
-	seen := make(map[plumbing.Hash]struct{})
-	return newPackfileIter(fs, f, t, seen, idx, nil, keepPack, objectIDSize)
+	_ = "STUB: not implemented"
+	return *new(storer.EncodedObjectIter), nil
 }
 
 func newPackfileIter(
@@ -115,68 +58,21 @@ func newPackfileIter(
 	keepPack bool,
 	objectIDSize int,
 ) (storer.EncodedObjectIter, error) {
-	p := packfile.NewPackfile(f,
-		packfile.WithFs(fs),
-		packfile.WithCache(cache),
-		packfile.WithIdx(index),
-		packfile.WithObjectIDSize(objectIDSize),
-	)
-
-	iter, err := p.GetByType(t)
-	if err != nil {
-		if !keepPack {
-			_ = f.Close()
-		}
-		return nil, err
-	}
-
-	return &packfileIter{
-		pack:     f,
-		iter:     iter,
-		seen:     seen,
-		keepPack: keepPack,
-	}, nil
+	_ = "STUB: not implemented"
+	return *new(storer.EncodedObjectIter), nil
 }
 
 func (iter *packfileIter) Next() (plumbing.EncodedObject, error) {
-	for {
-		obj, err := iter.iter.Next()
-		if err != nil {
-			return nil, err
-		}
-
-		if _, ok := iter.seen[obj.Hash()]; ok {
-			continue
-		}
-
-		iter.seen[obj.Hash()] = struct{}{}
-		return obj, nil
-	}
+	_ = "STUB: not implemented"
+	return *new(plumbing.EncodedObject), nil
 }
 
 func (iter *packfileIter) ForEach(cb func(plumbing.EncodedObject) error) error {
-	defer iter.Close()
-	for {
-		o, err := iter.Next()
-		if err != nil {
-			if err == io.EOF {
-				return nil
-			}
-			return err
-		}
-
-		if err := cb(o); err != nil {
-			return err
-		}
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
-func (iter *packfileIter) Close() {
-	iter.iter.Close()
-	if !iter.keepPack {
-		_ = iter.pack.Close()
-	}
-}
+func (iter *packfileIter) Close() { _ = "STUB: not implemented"; return }
 
 type objectsIter struct {
 	s *ObjectStorage
@@ -185,41 +81,13 @@ type objectsIter struct {
 }
 
 func (iter *objectsIter) Next() (plumbing.EncodedObject, error) {
-	if len(iter.h) == 0 {
-		return nil, io.EOF
-	}
-
-	obj, err := iter.s.getFromUnpacked(iter.h[0])
-	iter.h = iter.h[1:]
-
-	if err != nil {
-		return nil, err
-	}
-
-	if iter.t != plumbing.AnyObject && iter.t != obj.Type() {
-		return iter.Next()
-	}
-
-	return obj, err
+	_ = "STUB: not implemented"
+	return *new(plumbing.EncodedObject), nil
 }
 
 func (iter *objectsIter) ForEach(cb func(plumbing.EncodedObject) error) error {
-	defer iter.Close()
-	for {
-		o, err := iter.Next()
-		if err != nil {
-			if err == io.EOF {
-				return nil
-			}
-			return err
-		}
-
-		if err := cb(o); err != nil {
-			return err
-		}
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
-func (iter *objectsIter) Close() {
-	iter.h = []plumbing.Hash{}
-}
+func (iter *objectsIter) Close() { _ = "STUB: not implemented"; return }

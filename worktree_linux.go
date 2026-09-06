@@ -21,6 +21,4 @@ func init() {
 	}
 }
 
-func isSymlinkWindowsNonAdmin(error) bool {
-	return false
-}
+func isSymlinkWindowsNonAdmin(error) bool { _ = "STUB: not implemented"; return false }

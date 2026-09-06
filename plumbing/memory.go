@@ -3,16 +3,10 @@ package plumbing
 import (
 	"bytes"
 	"io"
-
-	"github.com/go-git/go-git/v6/plumbing/format/config"
 )
 
-// NewMemoryObject returns a new MemoryObject with the given ObjectHasher.
-func NewMemoryObject(oh *ObjectHasher) *MemoryObject {
-	return &MemoryObject{oh: oh}
-}
+func NewMemoryObject(oh *ObjectHasher) *MemoryObject { _ = "STUB: not implemented"; return nil }
 
-// MemoryObject on memory Object implementation
 type MemoryObject struct {
 	t    ObjectType
 	h    Hash
@@ -21,74 +15,32 @@ type MemoryObject struct {
 	oh   *ObjectHasher
 }
 
-// Hash returns the object Hash, the hash is calculated on-the-fly the first
-// time it's called, in all subsequent calls the same Hash is returned even
-// if the type or the content have changed. The Hash is only generated if the
-// size of the content is exactly the object size.
-func (o *MemoryObject) Hash() Hash {
-	if o.h.IsZero() && int64(len(o.cont)) == o.sz {
-		// TODO: Ensure that every MemoryObject has an object hasher.
-		if o.oh == nil {
-			o.oh = FromObjectFormat(config.SHA1)
-		}
-		h, err := o.oh.Compute(o.t, o.cont)
-		if err != nil {
-			return ZeroHash
-		}
-		o.h = h
-	}
+func (o *MemoryObject) Hash() Hash { _ = "STUB: not implemented"; return *new(Hash) }
 
-	if o.h.IsZero() {
-		return ZeroHash
-	}
+func (o *MemoryObject) Type() ObjectType { _ = "STUB: not implemented"; return *new(ObjectType) }
 
-	return o.h
-}
+func (o *MemoryObject) SetType(t ObjectType) { _ = "STUB: not implemented"; return }
 
-// Type returns the ObjectType
-func (o *MemoryObject) Type() ObjectType { return o.t }
+func (o *MemoryObject) Size() int64 { _ = "STUB: not implemented"; return 0 }
 
-// SetType sets the ObjectType
-func (o *MemoryObject) SetType(t ObjectType) { o.t = t }
+func (o *MemoryObject) SetSize(s int64) { _ = "STUB: not implemented"; return }
 
-// Size returns the size of the object
-func (o *MemoryObject) Size() int64 { return o.sz }
-
-// SetSize set the object size, a content of the given size should be written
-// afterwards
-func (o *MemoryObject) SetSize(s int64) {
-	o.sz = s
-}
-
-// Reader returns an io.ReadCloser used to read the object's content.
-//
-// For a MemoryObject, this reader is seekable.
 func (o *MemoryObject) Reader() (io.ReadCloser, error) {
-	return nopCloser{bytes.NewReader(o.cont)}, nil
+	_ = "STUB: not implemented"
+	return *new(io.ReadCloser), nil
 }
 
-// Writer returns a ObjectWriter used to write the object's content.
 func (o *MemoryObject) Writer() (io.WriteCloser, error) {
-	return o, nil
+	_ = "STUB: not implemented"
+	return *new(io.WriteCloser), nil
 }
 
-func (o *MemoryObject) Write(p []byte) (n int, err error) {
-	o.cont = append(o.cont, p...)
-	o.sz = int64(len(o.cont))
+func (o *MemoryObject) Write(p []byte) (n int, err error) { _ = "STUB: not implemented"; return 0, nil }
 
-	return len(p), nil
-}
+func (o *MemoryObject) Close() error { _ = "STUB: not implemented"; return nil }
 
-// Close releases any resources consumed by the object when it is acting as a
-// ObjectWriter.
-func (o *MemoryObject) Close() error { return nil }
-
-// nopCloser exposes the extra methods of bytes.Reader while nopping Close().
-//
-// This allows clients to attempt seeking in a cached Blob's Reader.
 type nopCloser struct {
 	*bytes.Reader
 }
 
-// Close does nothing.
-func (nc nopCloser) Close() error { return nil }
+func (nc nopCloser) Close() error { _ = "STUB: not implemented"; return nil }

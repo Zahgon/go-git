@@ -1,10 +1,5 @@
-// Package color provides ANSI color codes for terminal output.
 package color
 
-// TODO read colors from a github.com/go-git/go-git/plumbing/format/config.Config struct
-// TODO implement color parsing, see https://github.com/git/git/blob/v2.26.2/color.c
-
-// Colors. See https://github.com/git/git/blob/v2.26.2/color.h#L24-L53.
 const (
 	Normal       = ""
 	Reset        = "\033[m"

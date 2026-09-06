@@ -12,7 +12,6 @@ import (
 	xworktree "github.com/go-git/go-git/v6/x/plumbing/worktree"
 )
 
-// Create a linked worktree from a commit.
 func main() {
 	CheckArgs("<dotgit> <worktree>")
 	path := os.Args[1]
@@ -29,8 +28,6 @@ func main() {
 
 	Info("git worktree add %s", wtPath)
 
-	// No options are specified here, so Add will use the repository's HEAD commit by default.
-	// To use a specific commit instead, pass xworktree.WithCommit(<hash>) as an additional option.
 	err = w.Add(worktreeFs, name)
 	CheckIfError(err)
 

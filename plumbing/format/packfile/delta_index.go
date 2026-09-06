@@ -5,8 +5,6 @@ const (
 	maxChainLength = 64
 )
 
-// deltaIndex is a modified version of JGit's DeltaIndex adapted to our current
-// design.
 type deltaIndex struct {
 	table   []int
 	entries []int
@@ -21,98 +19,16 @@ func (idx *deltaIndex) init(buf []byte) {
 	idx.copyEntries(scanner)
 }
 
-// findMatch returns the offset of src where the block starting at tgtOffset
-// is and the length of the match. A length of 0 means there was no match. A
-// length of -1 means the src length is lower than the blksz and whatever
-// other positive length is the length of the match in bytes.
 func (idx *deltaIndex) findMatch(src, tgt []byte, tgtOffset int) (srcOffset, l int) {
-	if len(tgt) < tgtOffset+s {
-		return 0, len(tgt) - tgtOffset
-	}
-
-	if len(src) < blksz {
-		return 0, -1
-	}
-
-	h := hashBlock(tgt, tgtOffset)
-	tIdx := h & idx.mask
-	eIdx := idx.table[tIdx]
-	if eIdx == 0 {
-		return srcOffset, l
-	}
-
-	srcOffset = idx.entries[eIdx]
-
-	l = matchLength(src, tgt, tgtOffset, srcOffset)
-
-	return srcOffset, l
+	_ = "STUB: not implemented"
+	return 0, 0
 }
 
-func matchLength(src, tgt []byte, otgt, osrc int) (l int) {
-	lensrc := len(src)
-	lentgt := len(tgt)
-	for (osrc < lensrc && otgt < lentgt) && src[osrc] == tgt[otgt] {
-		l++
-		osrc++
-		otgt++
-	}
-	return l
-}
+func matchLength(src, tgt []byte, otgt, osrc int) (l int) { _ = "STUB: not implemented"; return 0 }
 
-func countEntries(scan *deltaIndexScanner) (cnt int) {
-	// Figure out exactly how many entries we need. As we do the
-	// enumeration truncate any delta chains longer than what we
-	// are willing to scan during encode. This keeps the encode
-	// logic linear in the size of the input rather than quadratic.
-	for i := 0; i < len(scan.table); i++ {
-		h := scan.table[i]
-		if h == 0 {
-			continue
-		}
+func countEntries(scan *deltaIndexScanner) (cnt int) { _ = "STUB: not implemented"; return 0 }
 
-		size := 0
-		for {
-			size++
-			if size == maxChainLength {
-				scan.next[h] = 0
-				break
-			}
-			h = scan.next[h]
-
-			if h == 0 {
-				break
-			}
-		}
-		cnt += size
-	}
-
-	return cnt
-}
-
-func (idx *deltaIndex) copyEntries(scanner *deltaIndexScanner) {
-	// Rebuild the entries list from the scanner, positioning all
-	// blocks in the same hash chain next to each other. We can
-	// then later discard the next list, along with the scanner.
-	//
-	next := 1
-	for i := 0; i < len(idx.table); i++ {
-		h := idx.table[i]
-		if h == 0 {
-			continue
-		}
-
-		idx.table[i] = next
-		for {
-			idx.entries[next] = scanner.entries[h]
-			next++
-			h = scanner.next[h]
-
-			if h == 0 {
-				break
-			}
-		}
-	}
-}
+func (idx *deltaIndex) copyEntries(scanner *deltaIndexScanner) { _ = "STUB: not implemented"; return }
 
 type deltaIndexScanner struct {
 	table   []int
@@ -123,77 +39,15 @@ type deltaIndexScanner struct {
 }
 
 func newDeltaIndexScanner(buf []byte, size int) *deltaIndexScanner {
-	size -= size % blksz
-	worstCaseBlockCnt := size / blksz
-	if worstCaseBlockCnt < 1 {
-		return new(deltaIndexScanner)
-	}
-
-	tableSize := tableSize(worstCaseBlockCnt)
-	scanner := &deltaIndexScanner{
-		table:   make([]int, tableSize),
-		mask:    tableSize - 1,
-		entries: make([]int, worstCaseBlockCnt+1),
-		next:    make([]int, worstCaseBlockCnt+1),
-	}
-
-	scanner.scan(buf, size)
-	return scanner
+	_ = "STUB: not implemented"
+	return nil
 }
 
-// slightly modified version of JGit's DeltaIndexScanner. We store the offset on the entries
-// instead of the entries and the key, so we avoid operations to retrieve the offset later, as
-// we don't use the key.
-// See: https://github.com/eclipse/jgit/blob/005e5feb4ecd08c4e4d141a38b9e7942accb3212/org.eclipse.jgit/src/org/eclipse/jgit/internal/storage/pack/DeltaIndexScanner.java
-func (s *deltaIndexScanner) scan(buf []byte, end int) {
-	lastHash := 0
-	ptr := end - blksz
+func (s *deltaIndexScanner) scan(buf []byte, end int) { _ = "STUB: not implemented"; return }
 
-	for {
-		key := hashBlock(buf, ptr)
-		tIdx := key & s.mask
-		head := s.table[tIdx]
-		if head != 0 && lastHash == key {
-			s.entries[head] = ptr
-		} else {
-			s.count++
-			eIdx := s.count
-			s.entries[eIdx] = ptr
-			s.next[eIdx] = head
-			s.table[tIdx] = eIdx
-		}
+func tableSize(worstCaseBlockCnt int) int { _ = "STUB: not implemented"; return 0 }
 
-		lastHash = key
-		ptr -= blksz
-
-		if 0 > ptr {
-			break
-		}
-	}
-}
-
-func tableSize(worstCaseBlockCnt int) int {
-	shift := 32 - leadingZeros(uint32(worstCaseBlockCnt))
-	sz := 1 << uint(shift-1)
-	if sz < worstCaseBlockCnt {
-		sz <<= 1
-	}
-	return sz
-}
-
-// use https://golang.org/pkg/math/bits/#LeadingZeros32 in the future
-func leadingZeros(x uint32) (n int) {
-	if x >= 1<<16 {
-		x >>= 16
-		n = 16
-	}
-	if x >= 1<<8 {
-		x >>= 8
-		n += 8
-	}
-	n += int(len8tab[x])
-	return 32 - n
-}
+func leadingZeros(x uint32) (n int) { _ = "STUB: not implemented"; return 0 }
 
 var len8tab = [256]uint8{
 	0x00, 0x01, 0x02, 0x02, 0x03, 0x03, 0x03, 0x03, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
@@ -214,35 +68,8 @@ var len8tab = [256]uint8{
 	0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
 }
 
-func hashBlock(raw []byte, ptr int) int {
-	// The first 4 steps collapse out into a 4 byte big-endian decode,
-	// with a larger right shift as we combined shift lefts together.
-	//
-	hash := ((uint32(raw[ptr]) & 0xff) << 24) |
-		((uint32(raw[ptr+1]) & 0xff) << 16) |
-		((uint32(raw[ptr+2]) & 0xff) << 8) |
-		(uint32(raw[ptr+3]) & 0xff)
-	hash ^= T[hash>>31]
+func hashBlock(raw []byte, ptr int) int { _ = "STUB: not implemented"; return 0 }
 
-	hash = ((hash << 8) | (uint32(raw[ptr+4]) & 0xff)) ^ T[hash>>23]
-	hash = ((hash << 8) | (uint32(raw[ptr+5]) & 0xff)) ^ T[hash>>23]
-	hash = ((hash << 8) | (uint32(raw[ptr+6]) & 0xff)) ^ T[hash>>23]
-	hash = ((hash << 8) | (uint32(raw[ptr+7]) & 0xff)) ^ T[hash>>23]
-
-	hash = ((hash << 8) | (uint32(raw[ptr+8]) & 0xff)) ^ T[hash>>23]
-	hash = ((hash << 8) | (uint32(raw[ptr+9]) & 0xff)) ^ T[hash>>23]
-	hash = ((hash << 8) | (uint32(raw[ptr+10]) & 0xff)) ^ T[hash>>23]
-	hash = ((hash << 8) | (uint32(raw[ptr+11]) & 0xff)) ^ T[hash>>23]
-
-	hash = ((hash << 8) | (uint32(raw[ptr+12]) & 0xff)) ^ T[hash>>23]
-	hash = ((hash << 8) | (uint32(raw[ptr+13]) & 0xff)) ^ T[hash>>23]
-	hash = ((hash << 8) | (uint32(raw[ptr+14]) & 0xff)) ^ T[hash>>23]
-	hash = ((hash << 8) | (uint32(raw[ptr+15]) & 0xff)) ^ T[hash>>23]
-
-	return int(hash)
-}
-
-// T is the hash lookup table for delta index computation.
 var T = []uint32{
 	0x00000000, 0xd4c6b32d, 0x7d4bd577,
 	0xa98d665a, 0x2e5119c3, 0xfa97aaee, 0x531accb4, 0x87dc7f99,

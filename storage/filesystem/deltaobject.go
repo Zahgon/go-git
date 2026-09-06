@@ -17,22 +17,18 @@ func newDeltaObject(
 	base plumbing.Hash,
 	size int64,
 ) plumbing.DeltaObject {
-	return &deltaObject{
-		EncodedObject: obj,
-		hash:          hash,
-		base:          base,
-		size:          size,
-	}
+	_ = "STUB: not implemented"
+	return *new(plumbing.DeltaObject)
 }
 
 func (o *deltaObject) BaseHash() plumbing.Hash {
-	return o.base
+	_ = "STUB: not implemented"
+	return *new(plumbing.Hash)
 }
 
-func (o *deltaObject) ActualSize() int64 {
-	return o.size
-}
+func (o *deltaObject) ActualSize() int64 { _ = "STUB: not implemented"; return 0 }
 
 func (o *deltaObject) ActualHash() plumbing.Hash {
-	return o.hash
+	_ = "STUB: not implemented"
+	return *new(plumbing.Hash)
 }

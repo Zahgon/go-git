@@ -1,22 +1,18 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os"
 
 	"github.com/go-git/go-git/v6"
 	. "github.com/go-git/go-git/v6/_examples"
-	"github.com/go-git/go-git/v6/config"
 	"github.com/go-git/go-git/v6/plumbing"
 )
 
-// Checkout a branch
 func main() {
 	CheckArgs("<url>", "<directory>", "<branch>")
 	url, directory, branch := os.Args[1], os.Args[2], os.Args[3]
 
-	// Clone the given repository to the given directory
 	Info("git clone %s %s", url, directory)
 	r, err := git.PlainClone(directory, &git.CloneOptions{
 		URL: url,
@@ -24,7 +20,6 @@ func main() {
 	CheckIfError(err)
 	defer func() { _ = r.Close() }()
 
-	// ... retrieving the commit being pointed by HEAD
 	Info("git show-ref --head HEAD")
 	ref, err := r.Head()
 	CheckIfError(err)
@@ -34,7 +29,6 @@ func main() {
 	w, err := r.Worktree()
 	CheckIfError(err)
 
-	// ... checking out branch
 	Info("git checkout %s", branch)
 
 	branchRefName := plumbing.NewBranchReferenceName(branch)
@@ -57,7 +51,6 @@ func main() {
 
 	Info("checked out branch: %s", branch)
 
-	// ... retrieving the commit being pointed by HEAD (branch now)
 	Info("git show-ref --head HEAD")
 	ref, err = r.Head()
 	CheckIfError(err)
@@ -65,23 +58,6 @@ func main() {
 }
 
 func fetchOrigin(repo *git.Repository, refSpecStr string) error {
-	remote, err := repo.Remote("origin")
-	CheckIfError(err)
-
-	var refSpecs []config.RefSpec
-	if refSpecStr != "" {
-		refSpecs = []config.RefSpec{config.RefSpec(refSpecStr)}
-	}
-
-	if err = remote.Fetch(&git.FetchOptions{
-		RefSpecs: refSpecs,
-	}); err != nil {
-		if errors.Is(err, git.NoErrAlreadyUpToDate) {
-			fmt.Print("refs already up to date")
-		} else {
-			return fmt.Errorf("fetch origin failed: %v", err)
-		}
-	}
-
+	_ = "STUB: not implemented"
 	return nil
 }

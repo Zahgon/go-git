@@ -1,35 +1,14 @@
 //go:build ignore
 
-// This is a simple standalone HTTP git server using the pure go-git backend
-// (no cgi-bin, no git-http-backend). It is intended for manual testing.
-//
-// Usage:
-//
-//	go run _examples/http-server/main.go /path/to/repos
-//
-// The directory should contain bare repositories (e.g. myrepo.git).
-// You can then do:
-//
-//	git clone http://localhost:8080/myrepo.git
-//	git push http://localhost:8080/myrepo.git main
-//
-// For pushes (receive-pack), the backend performs a basic auth check.
-// Use a URL with credentials or run with -allow-anonymous-receive.
-//
-//	 git clone http://user:pass@localhost:8080/myrepo.git
-//
-// The server supports the Git-Protocol header (version=2) automatically.
 package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
 	"github.com/go-git/go-billy/v6/osfs"
@@ -51,12 +30,9 @@ func main() {
 		*root = flag.Arg(0)
 	}
 
-
 	loader := transport.NewFilesystemLoader(osfs.New(*root), false)
 	b := backend.New(loader)
 
-	// Set up backend error logging (the backend logs things like auth failures,
-	// parse errors, etc. to this logger).
 	b.ErrorLog = log.New(os.Stderr, "[backend] ", log.LstdFlags|log.Lmicroseconds)
 
 	var handler http.Handler = b
@@ -105,7 +81,6 @@ func main() {
 		}
 	}()
 
-	// Graceful shutdown on SIGINT/SIGTERM
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 	<-stop
@@ -120,44 +95,18 @@ type allowAnonymous struct {
 }
 
 func (a allowAnonymous) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Header.Get("Authorization") == "" {
-		// The backend only checks for presence of the header (basic sanity check).
-		// The actual value does not matter for the go-git backend.
-		r.Header.Set("Authorization", "Basic dGVzdDp0ZXN0") // user:pass (ignored)
-	}
-	a.Handler.ServeHTTP(w, r)
+	_ = "STUB: not implemented"
+	return
 }
 
 func allowAnonymousReceive(h http.Handler) http.Handler {
-	return allowAnonymous{Handler: h}
+	_ = "STUB: not implemented"
+	return *new(http.Handler)
 }
 
-// requestLogger is a simple middleware that logs requests.
-// This is extremely helpful when debugging "refspec does not match", auth problems,
-// v2 vs v0/v1 negotiation, etc.
 func requestLogger(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gp := r.Header.Get("Git-Protocol")
-		auth := "no"
-		if r.Header.Get("Authorization") != "" {
-			auth = "yes"
-		}
-		ct := r.Header.Get("Content-Type")
-		logLine := fmt.Sprintf(">>> %s %s  Git-Protocol=%q  Auth=%s  Content-Type=%q  UA=%s",
-			r.Method, r.URL.RequestURI(), gp, auth, ct, r.UserAgent())
-
-		// Highlight protocol v2 clearly for debugging
-		if strings.HasPrefix(gp, "version=2") || gp == "version=2" {
-			logLine += "  [PROTOCOL v2]"
-		}
-		log.Print(logLine)
-
-		// Wrap the response writer so we can log the status code.
-		lrw := &loggingResponseWriter{ResponseWriter: w, status: 200}
-		next.ServeHTTP(lrw, r)
-
-		log.Printf("<<< %s %s  status=%d", r.Method, r.URL.RequestURI(), lrw.status)
-	})
+	_ = "STUB: not implemented"
+	return *new(http.Handler)
 }
 
 type loggingResponseWriter struct {
@@ -165,7 +114,4 @@ type loggingResponseWriter struct {
 	status int
 }
 
-func (lrw *loggingResponseWriter) WriteHeader(code int) {
-	lrw.status = code
-	lrw.ResponseWriter.WriteHeader(code)
-}
+func (lrw *loggingResponseWriter) WriteHeader(code int) { _ = "STUB: not implemented"; return }
